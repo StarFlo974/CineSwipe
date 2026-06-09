@@ -33,7 +33,7 @@ export function CinemaCard({ cinema }: CinemaCardProps) {
   };
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.card }, SHADOW.small]}>
+    <View style={[styles.card, { backgroundColor: colors.card }, SHADOW.sm]}>
       <View style={[styles.iconContainer, { backgroundColor: colors.accent + '20' }]}>
         <Ionicons name="film-outline" size={24} color={colors.accent} />
       </View>

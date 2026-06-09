@@ -147,7 +147,7 @@ export default function SwipeScreen() {
             <Text style={[styles.stateTitle, { color: C.text }]}>Connexion impossible</Text>
             <TouchableOpacity
               style={[styles.retryBtn, { backgroundColor: C.accent }]}
-              onPress={initialize}
+              onPress={() => initialize()}
               activeOpacity={0.8}
             >
               <Text style={styles.retryText}>Réessayer</Text>
@@ -162,7 +162,7 @@ export default function SwipeScreen() {
             </Text>
             <TouchableOpacity
               style={[styles.retryBtn, { backgroundColor: C.accent }]}
-              onPress={initialize}
+              onPress={() => initialize()}
               activeOpacity={0.8}
             >
               <Text style={styles.retryText}>Recommencer</Text>
