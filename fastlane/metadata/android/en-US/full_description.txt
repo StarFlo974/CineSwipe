@@ -1,0 +1,23 @@
+CineSwipe — Discover, Track & Watch
+
+Swipe through movies like you browse social media. Powered by TMDB, CineSwipe serves you trending and curated films based on your genre preferences.
+
+HOW IT WORKS
+• Swipe right — add to your watchlist
+• Swipe left — mark as seen and rate (1–5 stars)
+• Swipe up — skip this movie
+
+FEATURES
+• Swipe deck — endless stream of movies from TMDB trending & discover
+• Watchlist — save films you want to watch later
+• Seen — track every film you've watched with a personal rating
+• Statistics — view your average rating and favorite genres at a glance
+• Where to watch — see streaming, rental and purchase availability for your country
+• Genre filter — narrow the deck to only the genres you love
+• Dark & light mode — easy on the eyes, day or night
+• No account required — everything stays on your device
+
+PRIVACY
+No sign-up, no tracking, no ads. Your watchlist and ratings are stored locally on your device only.
+
+Data provided by TMDB (The Movie Database) — tmdb.org

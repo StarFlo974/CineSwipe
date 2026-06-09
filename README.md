@@ -1,195 +1,143 @@
 # CineSwipe
 
-Application mobile de découverte de films inspirée de Tinder. Swipez pour découvrir des films, constituez votre liste de films à voir et retrouvez où les regarder.
+[![CI](https://github.com/StarFlo974/CineSwipe/actions/workflows/ci.yml/badge.svg)](https://github.com/StarFlo974/CineSwipe/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Available on IzzyOnDroid](https://img.shields.io/badge/IzzyOnDroid-available-green)](https://apt.izzysoft.de/fdroid/index/apk/com.florian.cineswipe)
 
-## Aperçu
+Application mobile de découverte de films. Swipez pour découvrir, gérez votre liste et trouvez où regarder — sans compte, sans tracking.
 
-| Découverte | Fiche film | Où regarder | Profil |
-|:-:|:-:|:-:|:-:|
-| Swipe gauche/droite/haut | Détails complets | Streaming & cinémas | Stats & préférences |
-
-## Prérequis
-
-- **Node.js** 18+ — [nodejs.org](https://nodejs.org)
-- **Expo CLI** — `npm install -g expo-cli`
-- **Expo Go** sur votre téléphone — [iOS](https://apps.apple.com/app/expo-go/id982107779) / [Android](https://play.google.com/store/apps/details?id=host.exp.exponent)
-- Compte **TMDB** gratuit — [themoviedb.org](https://www.themoviedb.org/signup)
+---
 
 ## Installation
 
-```bash
-# 1. Cloner le projet
-git clone <repo-url>
-cd cineswipe
+### IzzyOnDroid (recommandé)
 
-# 2. Installer les dépendances
-npm install
+1. Ajoute le dépôt IzzyOnDroid dans ton client F-Droid :
+   `https://apt.izzysoft.de/fdroid/repo`
+2. Recherche **CineSwipe** et installe
 
-# 3. Configurer les clés API
-cp .env.example .env
-# Éditez .env et remplissez vos clés
-```
+### APK direct
 
-## Configuration des clés API
+Télécharge le dernier APK depuis les [GitHub Releases](https://github.com/StarFlo974/CineSwipe/releases/latest).
 
-### TMDB (obligatoire)
+> Pense à activer **"Sources inconnues"** dans Paramètres → Sécurité avant l'installation.
 
-1. Créez un compte sur [themoviedb.org](https://www.themoviedb.org/signup)
-2. Allez dans **Paramètres → API** sur votre profil
-3. Demandez une clé API (version 3) — gratuit et instantané
-4. Copiez la **API Key (v3 auth)** dans votre `.env` :
-
-```env
-EXPO_PUBLIC_TMDB_KEY=votre_clé_tmdb_ici
-```
-
-## Lancement
-
-```bash
-npx expo start
-```
-
-Une QR code apparaît dans le terminal. Scannez-le avec :
-- **Android** : l'application Expo Go
-- **iOS** : l'appareil photo natif
-
-### Autres modes
-
-```bash
-# Émulateur Android (Android Studio requis)
-npx expo start --android
-
-# Simulateur iOS (macOS + Xcode requis)
-npx expo start --ios
-
-# Navigateur web (fonctionnalités limitées)
-npx expo start --web
-```
+---
 
 ## Utilisation
 
-### Gestes de swipe
-
 | Geste | Action |
 |-------|--------|
-| Swipe droite | Ajouter à "À voir" |
-| Swipe gauche | Ignorer le film |
-| Swipe haut | Marquer "Déjà vu" + noter |
-| Tap sur la carte | Voir la fiche détaillée |
+| Swipe droite | Ajouter à la liste à voir |
+| Swipe gauche | Marquer comme vu + noter (1–5 ★) |
+| Swipe haut | Ignorer ce film |
+| Tap sur la carte | Ouvrir la fiche détaillée |
 
-### Boutons d'action
+**Écrans :**
+- **Découvrir** — deck de swipe infini (films tendance + découverte TMDB), filtre par genre
+- **À voir** — ta watchlist
+- **Vus** — historique avec notes et statistiques
+- **Profil** — note moyenne, genre favori, mode sombre/clair
 
-- **✕ (rouge)** : Ignorer
-- **★ (bleu)** : Déjà vu + notation
-- **♥ (vert)** : Ajouter à ma liste
+---
 
-### Filtres
+## Stack technique
 
-Appuyez sur l'icône filtre en haut à droite de l'écran Découverte pour filtrer par genre.
+| Technologie | Version | Rôle |
+|-------------|---------|------|
+| Expo | ~54.0.0 | Framework React Native |
+| React Native | 0.81.5 | UI natif |
+| TypeScript | ~5.9.2 | Typage statique |
+| Expo Router | ~6.0.23 | Navigation file-based |
+| Zustand | ^4.5.4 | State management (persisté) |
+| react-native-reanimated | ~3.19.5 | Animations swipe |
+| TMDB API | v3/v4 | Données films & streaming |
 
-## Build pour production
+---
+
+## Contribuer
 
 ### Prérequis
 
-```bash
-npm install -g eas-cli
-eas login
-```
+- Node.js 18+
+- npm
+- Compte TMDB + token Bearer (gratuit sur [themoviedb.org](https://www.themoviedb.org/settings/api))
 
-### APK Android
-
-```bash
-eas build --platform android --profile preview
-```
-
-### AAB Android (Google Play)
+### Installation locale
 
 ```bash
-eas build --platform android
+git clone https://github.com/StarFlo974/CineSwipe.git
+cd CineSwipe
+npm install --legacy-peer-deps
+
+# Configurer la clé API TMDB
+cp .env.example .env
+# Édite .env et renseigne ton token Bearer TMDB
+
+# Lancer l'app
+npx expo start
 ```
 
-### IPA iOS
+### Tests
 
 ```bash
-eas build --platform ios
+npm test           # mode watch
+npm run test:ci    # avec couverture (utilisé en CI)
 ```
 
-### Les deux plateformes
+46 cas de tests fonctionnels couvrant : watchlist, films vus, ignorés, profil, thème, genres, statistiques, URLs TMDB.
+
+### Build Android (release)
+
+Voir [SIGNING.md](SIGNING.md) pour la configuration de la keystore, puis :
 
 ```bash
-eas build --platform all
+bash scripts/build-release.sh
 ```
+
+L'APK est généré dans `release/cineswipe-v<version>.apk`.
+
+### Workflow CI/CD
+
+- Push sur `develop` → tests TypeScript + Jest → auto-merge vers `main` si tout passe
+- Push d'un tag `v*` → build APK signé → GitHub Release créée automatiquement
+
+---
 
 ## Architecture
 
 ```
 cineswipe/
-├── app/
-│   ├── (tabs)/
-│   │   ├── index.tsx          # Écran Swipe principal
-│   │   ├── watchlist.tsx      # Films à voir
-│   │   ├── watched.tsx        # Films vus + notes
-│   │   └── profile.tsx        # Profil & statistiques
-│   ├── movie/
-│   │   ├── [id].tsx           # Fiche film détaillée
-│   │   └── where-to-watch.tsx # Où regarder
-│   └── _layout.tsx            # Layout racine
-├── components/
-│   ├── MovieCard.tsx          # Carte swipeable (Reanimated 3)
-│   ├── SwipeButtons.tsx       # Boutons ✕ ★ ♥
-│   ├── StarRating.tsx         # Notation étoiles
-│   ├── GenrePill.tsx          # Badge genre
-│   ├── StreamingCard.tsx      # Carte service streaming
-│   ├── CinemaCard.tsx         # Carte cinéma
-│   └── BottomNav.tsx          # Navigation tabs
+├── app/(tabs)/
+│   ├── index.tsx          # Écran Swipe principal
+│   ├── watchlist.tsx      # Films à voir
+│   ├── watched.tsx        # Films vus + stats
+│   └── profile.tsx        # Profil & préférences
+├── components/            # MovieCard, SwipeButtons, StarRating…
 ├── hooks/
-│   ├── useMovieStore.ts       # Zustand store (persisté AsyncStorage)
-│   ├── useMovies.ts           # Fetch & gestion du deck TMDB
-│   └── useWatchProviders.ts   # Fetch fournisseurs streaming
-├── services/
-│   └── tmdb.ts                # Client API TMDB
-├── types/
-│   └── movie.ts               # Types TypeScript complets
-└── constants/
-    └── theme.ts               # Design tokens (dark/light)
+│   ├── useMovieStore.ts   # Zustand store (persisté AsyncStorage)
+│   ├── useMovies.ts       # Deck TMDB + filtres
+│   └── useWatchProviders.ts
+├── services/tmdb.ts       # Client API TMDB (Bearer auth)
+├── plugins/               # Config plugins Expo (prebuild)
+├── scripts/               # Scripts de build
+├── fastlane/metadata/     # Métadonnées IzzyOnDroid / F-Droid
+└── __tests__/             # 46 tests fonctionnels
 ```
 
-## Stack technique
-
-| Outil | Version | Rôle |
-|-------|---------|------|
-| Expo | ~51.0 | Framework RN |
-| Expo Router | ~3.5 | Navigation file-based |
-| Reanimated | ~3.10 | Animations fluides |
-| Gesture Handler | ~2.16 | Détection des gestes |
-| Zustand | ^4.5 | State management |
-| AsyncStorage | 1.23 | Persistance locale |
-| expo-location | ~17.0 | Géolocalisation cinémas |
-| expo-image | ~1.12 | Images optimisées |
+---
 
 ## Données & confidentialité
 
-- Aucune donnée personnelle n'est envoyée à des serveurs
-- Toutes les listes (À voir, Vus, Ignorés) sont stockées localement sur l'appareil
-- L'appel API TMDB est en lecture seule
+- Aucune donnée personnelle envoyée à des serveurs tiers
+- Watchlist et notes stockées uniquement en local (AsyncStorage)
+- Appels API TMDB en lecture seule
+- Pas de Google Services, pas de Firebase, pas d'analytics
 
-## Troubleshooting
-
-**"Cannot find module 'expo-router/entry'"**
-```bash
-npm install
-npx expo install
-```
-
-**Erreur de chargement des films**
-→ Vérifiez que `EXPO_PUBLIC_TMDB_KEY` est correctement configuré dans votre fichier `.env`
-
-**Les animations saccadent**
-→ Assurez-vous d'utiliser Expo Go (pas le navigateur web) et que `react-native-reanimated/plugin` est dans `babel.config.js`
-
-**Erreur de géolocalisation**
-→ Acceptez les permissions de localisation quand l'app les demande, ou accédez directement à "Où regarder" depuis la fiche film
+---
 
 ## Licence
 
-MIT — Projet éducatif
+MIT © 2025 Florian Startnort — voir [LICENSE](LICENSE)
+
+*Cette application utilise l'API [TMDB](https://www.themoviedb.org/). Elle n'est pas approuvée ni certifiée par TMDB.*

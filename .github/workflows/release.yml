@@ -1,0 +1,78 @@
+name: Release APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-apk:
+    name: Build & Release APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Installer les dépendances
+        run: npm ci --legacy-peer-deps
+
+      - name: Créer le fichier .env
+        run: echo "EXPO_PUBLIC_TMDB_KEY=${{ secrets.EXPO_PUBLIC_TMDB_KEY }}" > .env
+
+      - name: Expo prebuild Android
+        run: npx expo prebuild --platform android --clean
+
+      - name: Décoder la keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/release.keystore
+
+      - name: Injecter les propriétés de signature
+        run: |
+          cat >> android/gradle.properties <<EOF
+
+          RELEASE_STORE_FILE=release.keystore
+          RELEASE_STORE_PASSWORD=${{ secrets.STORE_PASSWORD }}
+          RELEASE_KEY_ALIAS=${{ secrets.KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}
+          EOF
+
+      - name: Build APK release
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease
+
+      - name: Préparer l'APK
+        run: |
+          mkdir -p release
+          cp android/app/build/outputs/apk/release/app-release.apk \
+             release/cineswipe-${{ github.ref_name }}.apk
+
+      - name: Créer la GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: CineSwipe ${{ github.ref_name }}
+          body: |
+            ## CineSwipe ${{ github.ref_name }}
+
+            ### Installation
+            Télécharge l'APK ci-dessous et installe-le sur ton appareil Android.
+            Assure-toi d'avoir activé "Sources inconnues" dans les paramètres.
+
+            ### Changelog
+            Voir les commits depuis la version précédente.
+          files: release/cineswipe-${{ github.ref_name }}.apk
+          generate_release_notes: true

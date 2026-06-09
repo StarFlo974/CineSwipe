@@ -21,7 +21,8 @@
         "foregroundImage": "",
         "backgroundColor": "#121218"
       },
-      "package": "com.cineswipe.app",
+      "package": "com.florian.cineswipe",
+      "versionCode": 1,
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION"
@@ -33,6 +34,7 @@
     },
     "plugins": [
       "expo-router",
+      "./plugins/with-android-release",
       [
         "expo-location",
         {
