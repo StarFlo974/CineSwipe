@@ -13,8 +13,8 @@ expo-env.d.ts
 .env.*.local
 
 # ── Builds natifs (générés par expo prebuild) ──────────────────────────────
-ios/
-android/
+/ios/
+/android/
 
 # ── Logs ───────────────────────────────────────────────────────────────────
 *.log

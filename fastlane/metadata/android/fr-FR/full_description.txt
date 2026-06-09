@@ -1,0 +1,23 @@
+CineSwipe — Découvrez, Suivez & Regardez
+
+Swipez les films comme vous parcourez les réseaux sociaux. Propulsé par TMDB, CineSwipe vous propose des films tendance et personnalisés selon vos genres préférés.
+
+COMMENT ÇA MARCHE
+• Swipe à droite — ajouter à votre liste à voir
+• Swipe à gauche — marquer comme vu et noter (1–5 étoiles)
+• Swipe vers le haut — passer ce film
+
+FONCTIONNALITÉS
+• Deck de swipe — flux infini de films depuis les tendances et la découverte TMDB
+• Liste à voir — sauvegardez les films que vous voulez regarder plus tard
+• Vus — suivez chaque film regardé avec une note personnelle
+• Statistiques — votre note moyenne et vos genres favoris en un coup d'œil
+• Où regarder — disponibilité streaming, location et achat selon votre pays
+• Filtre par genre — limitez le deck aux genres que vous aimez
+• Mode sombre & clair — agréable à l'œil, de jour comme de nuit
+• Sans compte — tout reste sur votre appareil
+
+CONFIDENTIALITÉ
+Pas d'inscription, pas de tracking, pas de pub. Votre liste et vos notes sont stockées uniquement en local sur votre appareil.
+
+Données fournies par TMDB (The Movie Database) — tmdb.org
