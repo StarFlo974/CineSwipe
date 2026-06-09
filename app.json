@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "CineSwipe",
+    "slug": "cineswipe",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "",
+    "userInterfaceStyle": "automatic",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.cineswipe.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Utilisé pour trouver les cinémas proches de vous."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "",
+        "backgroundColor": "#121218"
+      },
+      "package": "com.cineswipe.app",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Utilisé pour trouver les cinémas proches de vous."
+        }
+      ],
+      "expo-font",
+      "expo-web-browser"
+    ],
+    "scheme": "cineswipe",
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
