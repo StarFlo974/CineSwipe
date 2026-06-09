@@ -1,0 +1,39 @@
+# ── Dépendances ────────────────────────────────────────────────────────────
+node_modules/
+
+# ── Expo ───────────────────────────────────────────────────────────────────
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# ── Variables d'environnement (clés API, secrets) ─────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ── Builds natifs (générés par expo prebuild) ──────────────────────────────
+ios/
+android/
+
+# ── Logs ───────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── Couverture de tests ────────────────────────────────────────────────────
+coverage/
+
+# ── OS ─────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Éditeurs ───────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.sw?
+
+# ── Config MCP (peut contenir des tokens) ─────────────────────────────────
+.mcp.json
