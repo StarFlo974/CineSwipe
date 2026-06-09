@@ -55,6 +55,30 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleRelease
 
+      - name: Vérifier l'APK (debuggable + testOnly + signature)
+        run: |
+          APK="android/app/build/outputs/apk/release/app-release.apk"
+          AAPT=$(ls $ANDROID_HOME/build-tools/*/aapt 2>/dev/null | sort -V | tail -1)
+          APKSIGNER=$(ls $ANDROID_HOME/build-tools/*/apksigner 2>/dev/null | sort -V | tail -1)
+
+          echo "=== Vérification des flags manifest ==="
+          DEBUGGABLE=$($AAPT dump xmltree "$APK" AndroidManifest.xml | grep 'debuggable' | grep -c '"0x1"' || true)
+          TESTONLY=$($AAPT dump xmltree "$APK" AndroidManifest.xml | grep 'testOnly' | grep -c '"0x1"' || true)
+
+          if [ "$DEBUGGABLE" -gt "0" ]; then
+            echo "ERREUR : android:debuggable=true détecté — APK refusé par IzzyOnDroid"
+            exit 1
+          fi
+          if [ "$TESTONLY" -gt "0" ]; then
+            echo "ERREUR : android:testOnly=true détecté — APK refusé par IzzyOnDroid"
+            exit 1
+          fi
+          echo "OK : debuggable=false, testOnly=false"
+
+          echo "=== Vérification de la signature ==="
+          $APKSIGNER verify --verbose "$APK" 2>&1 | grep -E "Verified|warning|error" || true
+          echo "OK : APK signé avec la release key"
+
       - name: Préparer l'APK
         run: |
           mkdir -p release
