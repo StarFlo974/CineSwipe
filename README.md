@@ -6,24 +6,6 @@
 
 Application mobile de découverte de films. Swipez pour découvrir, gérez votre liste et trouvez où regarder — sans compte, sans tracking.
 
----
-
-## Installation
-
-### IzzyOnDroid (recommandé)
-
-1. Ajoute le dépôt IzzyOnDroid dans ton client F-Droid :
-   `https://apt.izzysoft.de/fdroid/repo`
-2. Recherche **CineSwipe** et installe
-
-### APK direct
-
-Télécharge le dernier APK depuis les [GitHub Releases](https://github.com/StarFlo974/CineSwipe/releases/latest).
-
-> Pense à activer **"Sources inconnues"** dans Paramètres → Sécurité avant l'installation.
-
----
-
 ## Utilisation
 
 | Geste | Action |
@@ -84,25 +66,6 @@ npx expo start
 npm test           # mode watch
 npm run test:ci    # avec couverture (utilisé en CI)
 ```
-
-46 cas de tests fonctionnels couvrant : watchlist, films vus, ignorés, profil, thème, genres, statistiques, URLs TMDB.
-
-### Build Android (release)
-
-Voir [SIGNING.md](SIGNING.md) pour la configuration de la keystore, puis :
-
-```bash
-bash scripts/build-release.sh
-```
-
-L'APK est généré dans `release/cineswipe-v<version>.apk`.
-
-### Workflow CI/CD
-
-- Push sur `develop` → tests TypeScript + Jest → auto-merge vers `main` si tout passe
-- Push d'un tag `v*` → build APK signé → GitHub Release créée automatiquement
-
----
 
 ## Architecture
 
