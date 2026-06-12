@@ -109,7 +109,7 @@ export default function WatchlistScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: C.bg }]}>
-      {/* ── Header ── */}
+      {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + SPACING.sm }]}>
         <Text style={[styles.pageTitle, { color: C.text }]}>À voir</Text>
         <Text style={[styles.count, { color: C.textSec }]}>
@@ -117,7 +117,7 @@ export default function WatchlistScreen() {
         </Text>
       </View>
 
-      {/* ── Search ── */}
+      {/* Search */}
       <View style={[styles.searchBar, { backgroundColor: C.card }]}>
         <Ionicons name="search-outline" size={16} color={C.textSec} />
         <TextInput
@@ -130,7 +130,7 @@ export default function WatchlistScreen() {
         />
       </View>
 
-      {/* ── Sort chips ── */}
+      {/* Sort chips */}
       <View style={styles.chips}>
         {SORT_OPTIONS.map((opt) => {
           const active = sortKey === opt.key;
@@ -157,7 +157,7 @@ export default function WatchlistScreen() {
         })}
       </View>
 
-      {/* ── List ── */}
+      {/* List */}
       {filtered.length === 0 ? (
         <View style={styles.empty}>
           <Ionicons name="bookmark-outline" size={68} color={C.textSec} />

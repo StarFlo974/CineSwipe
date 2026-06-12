@@ -4,117 +4,128 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Movie, WatchedMovie } from '../types/movie';
 import { ThemeMode } from '../constants/theme';
 
-export interface MovieStore {
-  watchlist: Movie[];
-  watched: WatchedMovie[];
-  ignored: number[];
-  theme: ThemeMode;
+export const useMovieStore = create<{
+  // Données
+  watchlist:      Movie[];
+  watched:        WatchedMovie[];
+  ignored:        number[];
+  theme:          ThemeMode;
   selectedGenres: number[];
-  username: string;
-  email: string;
-  addToWatchlist: (movie: Movie) => void;
+  username:       string;
+  email:          string;
+  // Actions
+  addToWatchlist:      (film: Movie) => void;
   removeFromWatchlist: (id: number) => void;
-  markAsWatched: (movie: Movie, rating: number) => void;
-  removeFromWatched: (id: number) => void;
-  ignore: (id: number) => void;
-  setTheme: (theme: ThemeMode) => void;
-  toggleTheme: () => void;
-  setSelectedGenres: (genres: number[]) => void;
-  setProfile: (username: string, email: string) => void;
-  isInWatchlist: (id: number) => boolean;
-  isWatched: (id: number) => boolean;
-  isIgnored: (id: number) => boolean;
-  getAverageRating: () => number;
-  getGenreStats: () => Record<number, number>;
-}
-
-export const useMovieStore = create<MovieStore>()(
+  markAsWatched:       (film: Movie, note: number) => void;
+  removeFromWatched:   (id: number) => void;
+  ignore:              (id: number) => void;
+  toggleTheme:         () => void;
+  setSelectedGenres:   (genres: number[]) => void;
+  setProfile:          (username: string, email: string) => void;
+  isInWatchlist:       (id: number) => boolean;
+  isWatched:           (id: number) => boolean;
+  isIgnored:           (id: number) => boolean;
+  getAverageRating:    () => number;
+  getGenreStats:       () => Record<number, number>;
+}>()(
   persist(
     (set, get) => ({
-      watchlist: [],
-      watched: [],
-      ignored: [],
-      theme: 'dark',
+      watchlist:      [],
+      watched:        [],
+      ignored:        [],
+      theme:          'dark',
       selectedGenres: [],
-      username: 'Florian',
-      email: '',
+      username:       'Florian',
+      email:          '',
 
-      addToWatchlist: (movie: Movie) =>
+      addToWatchlist(film: Movie) {
         set((state) => {
-          if (state.watchlist.some((m) => m.id === movie.id)) return state;
-          return { watchlist: [movie, ...state.watchlist] };
-        }),
-
-      removeFromWatchlist: (id: number) =>
-        set((state) => ({
-          watchlist: state.watchlist.filter((m) => m.id !== id),
-        })),
-
-      markAsWatched: (movie: Movie, rating: number) =>
-        set((state) => {
-          const alreadyWatched = state.watched.some((w) => w.movie.id === movie.id);
-          const updatedWatched = alreadyWatched
-            ? state.watched.map((w) =>
-                w.movie.id === movie.id
-                  ? { ...w, rating, watchedAt: new Date().toISOString() }
-                  : w
-              )
-            : [
-                { movie, rating, watchedAt: new Date().toISOString() },
-                ...state.watched,
-              ];
-          return {
-            watched: updatedWatched,
-            watchlist: state.watchlist.filter((m) => m.id !== movie.id),
-          };
-        }),
-
-      removeFromWatched: (id: number) =>
-        set((state) => ({
-          watched: state.watched.filter((w) => w.movie.id !== id),
-        })),
-
-      ignore: (id: number) =>
-        set((state) => ({
-          ignored: state.ignored.includes(id) ? state.ignored : [...state.ignored, id],
-          watchlist: state.watchlist.filter((m) => m.id !== id),
-        })),
-
-      setTheme: (theme: ThemeMode) => set({ theme }),
-
-      toggleTheme: () =>
-        set((state) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' })),
-
-      setSelectedGenres: (genres: number[]) => set({ selectedGenres: genres }),
-
-      setProfile: (username: string, email: string) => set({ username, email }),
-
-      isInWatchlist: (id: number) => get().watchlist.some((m) => m.id === id),
-
-      isWatched: (id: number) => get().watched.some((w) => w.movie.id === id),
-
-      isIgnored: (id: number) => get().ignored.includes(id),
-
-      getAverageRating: () => {
-        const { watched } = get();
-        if (watched.length === 0) return 0;
-        const sum = watched.reduce((acc, w) => acc + w.rating, 0);
-        return Math.round((sum / watched.length) * 10) / 10;
+          if (state.watchlist.some((m) => m.id === film.id)) return state;
+          return { watchlist: [film, ...state.watchlist] };
+        });
       },
 
-      getGenreStats: () => {
-        const { watched } = get();
+      removeFromWatchlist(id: number) {
+        set((state) => ({ watchlist: state.watchlist.filter((m) => m.id !== id) }));
+      },
+
+      markAsWatched(film: Movie, note: number) {
+        set((state) => {
+          const dejaVu = state.watched.find((v) => v.movie.id === film.id);
+          let nouveauxVus: WatchedMovie[];
+
+          if (dejaVu) {
+            // Met à jour la note si le film a déjà été vu
+            nouveauxVus = state.watched.map((v) =>
+              v.movie.id === film.id
+                ? { ...v, rating: note, watchedAt: new Date().toISOString() }
+                : v
+            );
+          } else {
+            nouveauxVus = [{ movie: film, rating: note, watchedAt: new Date().toISOString() }, ...state.watched];
+          }
+
+          return {
+            watched:   nouveauxVus,
+            watchlist: state.watchlist.filter((m) => m.id !== film.id),
+          };
+        });
+      },
+
+      removeFromWatched(id: number) {
+        set((state) => ({ watched: state.watched.filter((v) => v.movie.id !== id) }));
+      },
+
+      ignore(id: number) {
+        set((state) => ({
+          ignored:   state.ignored.includes(id) ? state.ignored : [...state.ignored, id],
+          watchlist: state.watchlist.filter((m) => m.id !== id),
+        }));
+      },
+
+      toggleTheme() {
+        set((state) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' }));
+      },
+
+      setSelectedGenres(genres: number[]) {
+        set({ selectedGenres: genres });
+      },
+
+      setProfile(username: string, email: string) {
+        set({ username, email });
+      },
+
+      isInWatchlist(id: number) {
+        return get().watchlist.some((m) => m.id === id);
+      },
+
+      isWatched(id: number) {
+        return get().watched.some((v) => v.movie.id === id);
+      },
+
+      isIgnored(id: number) {
+        return get().ignored.includes(id);
+      },
+
+      getAverageRating() {
+        const vus = get().watched;
+        if (vus.length === 0) return 0;
+        const total = vus.reduce((acc, v) => acc + v.rating, 0);
+        return Math.round((total / vus.length) * 10) / 10;
+      },
+
+      getGenreStats() {
         const stats: Record<number, number> = {};
-        watched.forEach((w) => {
-          (w.movie.genre_ids ?? []).forEach((genreId) => {
-            stats[genreId] = (stats[genreId] ?? 0) + 1;
+        get().watched.forEach((v) => {
+          (v.movie.genre_ids ?? []).forEach((idGenre) => {
+            stats[idGenre] = (stats[idGenre] ?? 0) + 1;
           });
         });
         return stats;
       },
     }),
     {
-      name: 'cineswipe-store',
+      name:    'cineswipe-store',
       storage: createJSONStorage(() => AsyncStorage),
     }
   )

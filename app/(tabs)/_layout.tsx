@@ -1,5 +1,5 @@
 /**
- * Onglets : 🎬 Découvrir | 🎞 À voir | ✓ Vus | 👤 Profil
+ * Onglets : Découvrir | À voir | Vus | Profil
  */
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,14 +18,14 @@ export default function TabLayout() {
           backgroundColor: C.surface,
           borderTopColor: C.border,
           borderTopWidth: 1,
-          height: LAYOUT.tabBarH,   // 84px (Figma)
+          height: LAYOUT.tabBarH,   // 84px
           paddingBottom: 12,
           paddingTop: 10,
         },
         tabBarActiveTintColor:   C.accent,
         tabBarInactiveTintColor: C.textSec,
         tabBarLabelStyle: {
-          fontSize: FONT_SIZE.xxs,  // 10px (Figma)
+          fontSize: FONT_SIZE.xxs,  // 10px
           fontWeight: FONT_WEIGHT.regular,
           marginTop: 2,
         },

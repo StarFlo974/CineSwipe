@@ -11,213 +11,187 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
-import { useMovieStore } from '../../hooks/useMovieStore';
+import { useMovieStore }    from '../../hooks/useMovieStore';
 import { useWatchProviders } from '../../hooks/useWatchProviders';
 import { DARK_THEME, LIGHT_THEME, SPACING, FONT_SIZE, RADIUS } from '../../constants/theme';
 import { TMDBStreamingCard } from '../../components/StreamingCard';
 import { CinemaCard, CinemaCardSkeleton, Cinema } from '../../components/CinemaCard';
 import { WatchProvider } from '../../types/movie';
 
-// Simulated nearby cinema data based on location
-const MOCK_CINEMAS: Cinema[] = [
-  { name: 'UGC Ciné Cité', address: '2 Place de la Défense, 92800 Puteaux', distance: 0.8, nextShowtime: '14h30' },
-  { name: 'Pathé Gaumont', address: '5 Av. des Ternes, 75017 Paris', distance: 1.4, nextShowtime: '16h00' },
-  { name: 'MK2 Bibliothèque', address: '128-162 Av. de France, 75013 Paris', distance: 2.1, nextShowtime: '17h45' },
-  { name: 'Cinéma Le Rex', address: '12 Rue de la Paix, 75002 Paris', distance: 3.2, nextShowtime: '20h15' },
+// Cinémas fictifs — à remplacer par un vrai appel API de cinémas
+const CINEMAS_MOCK: Cinema[] = [
+  { name: 'UGC Ciné Cité',    address: '2 Place de la Défense, 92800 Puteaux', distance: 0.8, nextShowtime: '14h30' },
+  { name: 'Pathé Gaumont',    address: '5 Av. des Ternes, 75017 Paris',        distance: 1.4, nextShowtime: '16h00' },
+  { name: 'MK2 Bibliothèque', address: '128-162 Av. de France, 75013 Paris',   distance: 2.1, nextShowtime: '17h45' },
+  { name: 'Cinéma Le Rex',    address: '12 Rue de la Paix, 75002 Paris',       distance: 3.2, nextShowtime: '20h15' },
 ];
 
 export default function WhereToWatchScreen() {
   const { id, title } = useLocalSearchParams<{ id: string; title: string }>();
-  const insets = useSafeAreaInsets();
-  const router = useRouter();
-  const theme = useMovieStore((s) => s.theme);
-  const colors = theme === 'dark' ? DARK_THEME : LIGHT_THEME;
+  const insets   = useSafeAreaInsets();
+  const router   = useRouter();
+  const theme    = useMovieStore((s) => s.theme);
+  const couleurs = theme === 'dark' ? DARK_THEME : LIGHT_THEME;
 
-  const movieId = parseInt(id ?? '0');
-  const { tmdb: tmdbProviders, loading } = useWatchProviders(movieId);
+  const idFilm = parseInt(id ?? '0');
+  const { fournisseurs, chargement } = useWatchProviders(idFilm);
 
-  const [locationGranted, setLocationGranted] = useState<boolean | null>(null);
-  const [cinemas, setCinemas] = useState<Cinema[]>([]);
-  const [cinemasLoading, setCinemasLoading] = useState(false);
+  const [localisationAccordee, setLocalisationAccordee] = useState<boolean | null>(null);
+  const [cinemas, setCinemas]                           = useState<Cinema[]>([]);
+  const [cinemasEnChargement, setCinemasEnChargement]   = useState(false);
 
   useEffect(() => {
-    const requestLocation = async () => {
-      setCinemasLoading(true);
+    async function demanderLocalisation() {
+      setCinemasEnChargement(true);
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status === 'granted') {
-          setLocationGranted(true);
-          // In production, you'd call a cinema API with the coordinates
-          // We simulate with mock data sorted by distance
-          const mockSorted = [...MOCK_CINEMAS].sort((a, b) => a.distance - b.distance);
-          setCinemas(mockSorted);
+          setLocalisationAccordee(true);
+          // En production, appeler une API cinémas avec les coordonnées GPS
+          setCinemas([...CINEMAS_MOCK].sort((a, b) => a.distance - b.distance));
         } else {
-          setLocationGranted(false);
+          setLocalisationAccordee(false);
         }
       } catch {
-        setLocationGranted(false);
+        setLocalisationAccordee(false);
       } finally {
-        setCinemasLoading(false);
+        setCinemasEnChargement(false);
       }
-    };
-    requestLocation();
+    }
+    demanderLocalisation();
   }, []);
 
-  const streaming = tmdbProviders?.flatrate ?? [];
-  const rental = tmdbProviders?.rent ?? [];
-  const purchase = tmdbProviders?.buy ?? [];
-
-  const hasStreaming = streaming.length > 0;
-  const hasRent = rental.length > 0;
-  const hasBuy = purchase.length > 0;
-  const hasVod = hasRent || hasBuy;
-
-  const deduplicateProviders = (providers: WatchProvider[]): WatchProvider[] => {
-    const seen = new Set<number>();
-    return providers.filter((p) => {
-      if (seen.has(p.provider_id)) return false;
-      seen.add(p.provider_id);
+  // Supprime les doublons dans une liste de fournisseurs
+  function dedoublonner(liste: WatchProvider[]): WatchProvider[] {
+    const dejaVus = new Set<number>();
+    return liste.filter((fournisseur) => {
+      if (dejaVus.has(fournisseur.provider_id)) return false;
+      dejaVus.add(fournisseur.provider_id);
       return true;
     });
-  };
+  }
 
-  const uniqueStreaming = deduplicateProviders(streaming);
-  const uniqueRental = deduplicateProviders(rental);
-  const uniquePurchase = deduplicateProviders(purchase);
+  const enStreaming = dedoublonner(fournisseurs?.flatrate ?? []);
+  const enLocation  = dedoublonner(fournisseurs?.rent ?? []);
+  const enAchat     = dedoublonner(fournisseurs?.buy ?? []);
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.bg }]}>
-      {/* Header */}
-      <View style={[styles.header, { paddingTop: insets.top + SPACING.sm }]}>
+    <View style={[styles.container, { backgroundColor: couleurs.bg }]}>
+
+      {/* En-tête */}
+      <View style={[styles.entete, { paddingTop: insets.top + SPACING.sm }]}>
         <TouchableOpacity
-          style={[styles.backBtn, { backgroundColor: colors.surface }]}
+          style={[styles.boutonRetour, { backgroundColor: couleurs.surface }]}
           onPress={() => router.back()}
           activeOpacity={0.8}
         >
-          <Ionicons name="chevron-back" size={22} color={colors.text} />
+          <Ionicons name="chevron-back" size={22} color={couleurs.text} />
         </TouchableOpacity>
-        <View style={styles.headerTitle}>
-          <Text style={[styles.title, { color: colors.text }]}>Où regarder</Text>
+        <View style={styles.titreEntete}>
+          <Text style={[styles.titre, { color: couleurs.text }]}>Où regarder</Text>
           {title && (
-            <Text style={[styles.movieTitle, { color: colors.textSec }]} numberOfLines={1}>
+            <Text style={[styles.titrFilm, { color: couleurs.textSec }]} numberOfLines={1}>
               {title}
             </Text>
           )}
         </View>
       </View>
 
-      {loading ? (
-        <View style={styles.loading}>
-          <ActivityIndicator size="large" color={colors.accent} />
-          <Text style={[styles.loadingText, { color: colors.textSec }]}>
+      {chargement ? (
+        <View style={styles.chargementVue}>
+          <ActivityIndicator size="large" color={couleurs.accent} />
+          <Text style={[styles.txtChargement, { color: couleurs.textSec }]}>
             Recherche des disponibilités...
           </Text>
         </View>
       ) : (
         <ScrollView
-          contentContainerStyle={[
-            styles.content,
-            { paddingBottom: insets.bottom + SPACING.xl },
-          ]}
+          contentContainerStyle={[styles.contenu, { paddingBottom: insets.bottom + SPACING.xl }]}
           showsVerticalScrollIndicator={false}
         >
-          {/* Streaming section */}
-          <View style={[styles.section, { backgroundColor: colors.surface }]}>
-            <View style={styles.sectionHeader}>
-              <View style={[styles.sectionIcon, { backgroundColor: colors.green + '20' }]}>
-                <Ionicons name="play-circle" size={20} color={colors.green} />
+          {/* Streaming inclus */}
+          <View style={[styles.section, { backgroundColor: couleurs.surface }]}>
+            <View style={styles.enteteSection}>
+              <View style={[styles.iconeSection, { backgroundColor: couleurs.green + '20' }]}>
+                <Ionicons name="play-circle" size={20} color={couleurs.green} />
               </View>
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>Streaming inclus</Text>
+              <Text style={[styles.titreSection, { color: couleurs.text }]}>Streaming inclus</Text>
             </View>
-
-            {hasStreaming ? (
-              <>
-                {uniqueStreaming.map((p) => (
-                  <TMDBStreamingCard key={p.provider_id} provider={p} type="streaming" />
-                ))}
-              </>
+            {enStreaming.length > 0 ? (
+              enStreaming.map((p) => <TMDBStreamingCard key={p.provider_id} provider={p} type="streaming" />)
             ) : (
-              <View style={styles.unavailable}>
-                <Text style={[styles.unavailableText, { color: colors.textSec }]}>
+              <View style={styles.indisponible}>
+                <Text style={[styles.txtIndisponible, { color: couleurs.textSec }]}>
                   Non disponible en streaming en France actuellement
                 </Text>
               </View>
             )}
           </View>
 
-          {/* Location & Purchase section */}
-          <View style={[styles.section, { backgroundColor: colors.surface }]}>
-            <View style={styles.sectionHeader}>
-              <View style={[styles.sectionIcon, { backgroundColor: colors.gold + '20' }]}>
-                <Ionicons name="cart" size={20} color={colors.gold} />
+          {/* Location et achat */}
+          <View style={[styles.section, { backgroundColor: couleurs.surface }]}>
+            <View style={styles.enteteSection}>
+              <View style={[styles.iconeSection, { backgroundColor: couleurs.gold + '20' }]}>
+                <Ionicons name="cart" size={20} color={couleurs.gold} />
               </View>
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>Location & Achat</Text>
+              <Text style={[styles.titreSection, { color: couleurs.text }]}>Location & Achat</Text>
             </View>
-
-            {hasVod ? (
+            {enLocation.length > 0 || enAchat.length > 0 ? (
               <>
-                {uniqueRental.length > 0 && (
+                {enLocation.length > 0 && (
                   <View>
-                    <Text style={[styles.subSectionLabel, { color: colors.textSec }]}>Location</Text>
-                    {uniqueRental.map((p) => (
-                      <TMDBStreamingCard key={p.provider_id} provider={p} type="rent" />
-                    ))}
+                    <Text style={[styles.sousTitreSection, { color: couleurs.textSec }]}>Location</Text>
+                    {enLocation.map((p) => <TMDBStreamingCard key={p.provider_id} provider={p} type="rent" />)}
                   </View>
                 )}
-                {uniquePurchase.length > 0 && (
+                {enAchat.length > 0 && (
                   <View>
-                    <Text style={[styles.subSectionLabel, { color: colors.textSec }]}>Achat</Text>
-                    {uniquePurchase.map((p) => (
-                      <TMDBStreamingCard key={p.provider_id} provider={p} type="buy" />
-                    ))}
+                    <Text style={[styles.sousTitreSection, { color: couleurs.textSec }]}>Achat</Text>
+                    {enAchat.map((p) => <TMDBStreamingCard key={p.provider_id} provider={p} type="buy" />)}
                   </View>
                 )}
               </>
             ) : (
-              <View style={styles.unavailable}>
-                <Text style={[styles.unavailableText, { color: colors.textSec }]}>
+              <View style={styles.indisponible}>
+                <Text style={[styles.txtIndisponible, { color: couleurs.textSec }]}>
                   Non disponible à la vente/location en France actuellement
                 </Text>
               </View>
             )}
           </View>
 
-          {/* Cinemas section */}
-          <View style={[styles.section, { backgroundColor: colors.surface }]}>
-            <View style={styles.sectionHeader}>
-              <View style={[styles.sectionIcon, { backgroundColor: colors.accent + '20' }]}>
-                <Ionicons name="film" size={20} color={colors.accent} />
+          {/* Cinémas à proximité */}
+          <View style={[styles.section, { backgroundColor: couleurs.surface }]}>
+            <View style={styles.enteteSection}>
+              <View style={[styles.iconeSection, { backgroundColor: couleurs.accent + '20' }]}>
+                <Ionicons name="film" size={20} color={couleurs.accent} />
               </View>
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>Cinémas à proximité</Text>
+              <Text style={[styles.titreSection, { color: couleurs.text }]}>Cinémas à proximité</Text>
             </View>
-
-            {cinemasLoading ? (
+            {cinemasEnChargement ? (
               <>
                 <CinemaCardSkeleton />
                 <CinemaCardSkeleton />
               </>
-            ) : locationGranted === false ? (
-              <View style={styles.unavailable}>
-                <Ionicons name="location-outline" size={32} color={colors.textSec} />
-                <Text style={[styles.unavailableText, { color: colors.textSec }]}>
+            ) : localisationAccordee === false ? (
+              <View style={styles.indisponible}>
+                <Ionicons name="location-outline" size={32} color={couleurs.textSec} />
+                <Text style={[styles.txtIndisponible, { color: couleurs.textSec }]}>
                   Accès à la localisation requis pour afficher les cinémas proches
                 </Text>
               </View>
             ) : cinemas.length === 0 ? (
-              <View style={styles.unavailable}>
-                <Text style={[styles.unavailableText, { color: colors.textSec }]}>
+              <View style={styles.indisponible}>
+                <Text style={[styles.txtIndisponible, { color: couleurs.textSec }]}>
                   Aucun cinéma disponible à proximité
                 </Text>
               </View>
             ) : (
-              cinemas.map((cinema) => (
-                <CinemaCard key={cinema.name} cinema={cinema} />
-              ))
+              cinemas.map((cinema) => <CinemaCard key={cinema.name} cinema={cinema} />)
             )}
           </View>
 
-          {/* Attribution */}
-          <Text style={[styles.attribution, { color: colors.textSec }]}>
+          <Text style={[styles.attribution, { color: couleurs.textSec }]}>
             Données streaming fournies par TMDB. Les disponibilités peuvent varier.
           </Text>
         </ScrollView>
@@ -228,88 +202,81 @@ export default function WhereToWatchScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+
+  entete: {
+    flexDirection:     'row',
+    alignItems:        'center',
     paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.lg,
-    gap: SPACING.md,
+    paddingBottom:     SPACING.lg,
+    gap:               SPACING.md,
   },
-  backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
+  boutonRetour: {
+    width:          40,
+    height:         40,
+    borderRadius:   20,
+    alignItems:     'center',
     justifyContent: 'center',
   },
-  headerTitle: {
-    flex: 1,
-    gap: 2,
-  },
-  title: {
-    fontSize: FONT_SIZE.xl,
-    fontWeight: '700',
-  },
-  movieTitle: {
-    fontSize: FONT_SIZE.sm,
-  },
-  loading: {
-    flex: 1,
-    alignItems: 'center',
+  titreEntete: { flex: 1, gap: 2 },
+  titre:       { fontSize: FONT_SIZE.xl, fontWeight: '700' },
+  titrFilm:    { fontSize: FONT_SIZE.sm },
+
+  chargementVue: {
+    flex:           1,
+    alignItems:     'center',
     justifyContent: 'center',
-    gap: SPACING.md,
+    gap:            SPACING.md,
   },
-  loadingText: {
-    fontSize: FONT_SIZE.md,
-  },
-  content: {
+  txtChargement: { fontSize: FONT_SIZE.md },
+
+  contenu: {
     paddingHorizontal: SPACING.lg,
-    gap: SPACING.md,
+    gap:               SPACING.md,
   },
   section: {
     borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    gap: SPACING.sm,
+    padding:      SPACING.md,
+    gap:          SPACING.sm,
   },
-  sectionHeader: {
+  enteteSection: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-    marginBottom: SPACING.xs,
+    alignItems:    'center',
+    gap:           SPACING.sm,
+    marginBottom:  SPACING.xs,
   },
-  sectionIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: RADIUS.sm,
-    alignItems: 'center',
+  iconeSection: {
+    width:          36,
+    height:         36,
+    borderRadius:   RADIUS.sm,
+    alignItems:     'center',
     justifyContent: 'center',
   },
-  sectionTitle: {
-    fontSize: FONT_SIZE.lg,
+  titreSection: {
+    fontSize:   FONT_SIZE.lg,
     fontWeight: '700',
   },
-  subSectionLabel: {
-    fontSize: FONT_SIZE.sm,
-    fontWeight: '600',
+  sousTitreSection: {
+    fontSize:      FONT_SIZE.sm,
+    fontWeight:    '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    marginBottom: SPACING.xs,
-    marginTop: SPACING.xs,
+    marginBottom:  SPACING.xs,
+    marginTop:     SPACING.xs,
   },
-  unavailable: {
-    alignItems: 'center',
+  indisponible: {
+    alignItems:    'center',
     paddingVertical: SPACING.lg,
-    gap: SPACING.sm,
+    gap:           SPACING.sm,
   },
-  unavailableText: {
-    fontSize: FONT_SIZE.sm,
-    textAlign: 'center',
+  txtIndisponible: {
+    fontSize:   FONT_SIZE.sm,
+    textAlign:  'center',
     lineHeight: 20,
   },
   attribution: {
-    fontSize: FONT_SIZE.xs,
-    textAlign: 'center',
-    lineHeight: 18,
+    fontSize:          FONT_SIZE.xs,
+    textAlign:         'center',
+    lineHeight:        18,
     paddingHorizontal: SPACING.sm,
   },
 });

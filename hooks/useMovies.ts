@@ -1,112 +1,119 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { tmdb } from '../services/tmdb';
 import { Movie } from '../types/movie';
 import { useMovieStore } from './useMovieStore';
 
-const PRELOAD_THRESHOLD = 3;
+// Charge la page suivante quand il reste moins de X films dans le deck
+const SEUIL_PRELOAD = 3;
 
 export function useMovies() {
-  const [movies, setMovies] = useState<Movie[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const pageRef = useRef(1);
-  const totalPagesRef = useRef(1);
-  const fetchingRef = useRef(false);
+  const [films, setFilms]             = useState<Movie[]>([]);
+  const [chargement, setChargement]   = useState(false);
+  const [erreur, setErreur]           = useState<string | null>(null);
 
-  const ignored = useMovieStore((s) => s.ignored);
-  const watched = useMovieStore((s) => s.watched);
-  const watchlist = useMovieStore((s) => s.watchlist);
-  const selectedGenres = useMovieStore((s) => s.selectedGenres);
+  const pageCourante          = useRef(1);
+  const totalPages            = useRef(1);
+  const enCoursDeChargement   = useRef(false);
 
-  const seenIds = new Set([
-    ...ignored,
-    ...watched.map((w) => w.movie.id),
-    ...watchlist.map((m) => m.id),
-  ]);
+  const ignores       = useMovieStore((s) => s.ignored);
+  const vus           = useMovieStore((s) => s.watched);
+  const watchlist     = useMovieStore((s) => s.watchlist);
+  const genresFiltres = useMovieStore((s) => s.selectedGenres);
 
-  const filterMovies = useCallback(
-    (rawMovies: Movie[]): Movie[] =>
-      rawMovies.filter((m) => !seenIds.has(m.id) && m.poster_path),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [ignored.length, watched.length, watchlist.length]
-  );
+  // Retourne l'ensemble des IDs déjà traités (ignorés + vus + liste à voir)
+  function getIdsDejaVus() {
+    const ids = new Set<number>();
+    ignores.forEach((id) => ids.add(id));
+    vus.forEach((v) => ids.add(v.movie.id));
+    watchlist.forEach((m) => ids.add(m.id));
+    return ids;
+  }
 
-  const loadPage = useCallback(async (page: number) => {
-    if (fetchingRef.current) return;
-    fetchingRef.current = true;
+  // Garde uniquement les films non vus et avec une affiche disponible
+  function filtrerFilms(resultats: Movie[]): Movie[] {
+    const idsDejaVus = getIdsDejaVus();
+    return resultats.filter((film) => !idsDejaVus.has(film.id) && film.poster_path);
+  }
+
+  // Charge une page supplémentaire et l'ajoute au deck existant
+  async function chargerPage(page: number) {
+    if (enCoursDeChargement.current) return;
+    enCoursDeChargement.current = true;
     try {
-      const response = await tmdb.discoverMovies(page, selectedGenres);
-      totalPagesRef.current = response.total_pages;
-      const filtered = filterMovies(response.results);
-      setMovies((prev) => {
-        const existingIds = new Set(prev.map((m) => m.id));
-        const unique = filtered.filter((m) => !existingIds.has(m.id));
-        return [...prev, ...unique];
+      const reponse     = await tmdb.discoverMovies(page, genresFiltres);
+      totalPages.current = reponse.total_pages;
+      const nouveaux    = filtrerFilms(reponse.results);
+      setFilms((prev) => {
+        const idsExistants = new Set(prev.map((m) => m.id));
+        return [...prev, ...nouveaux.filter((m) => !idsExistants.has(m.id))];
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur de chargement');
+      setErreur(err instanceof Error ? err.message : 'Erreur de chargement');
     } finally {
-      fetchingRef.current = false;
+      enCoursDeChargement.current = false;
     }
-  }, [filterMovies, selectedGenres]);
+  }
 
-  const initialize = useCallback(async (genresOverride?: number[]) => {
-    const genres = genresOverride ?? selectedGenres;
-    setLoading(true);
-    setError(null);
-    pageRef.current = 1;
-    setMovies([]);
+  // Réinitialise le deck depuis la page 1 (appelé au démarrage ou après un filtre)
+  async function initialiser(genresOverride?: number[]) {
+    const genres = genresOverride ?? genresFiltres;
+    setChargement(true);
+    setErreur(null);
+    pageCourante.current = 1;
+    setFilms([]);
+
     try {
-      let rawResults;
+      let resultats: Movie[];
+
       if (genres.length > 0) {
-        // Filtre actif : seulement discover pour respecter les genres
-        const discover = await tmdb.discoverMovies(1, genres);
-        totalPagesRef.current = discover.total_pages;
-        rawResults = discover.results;
+        // Filtre actif : seulement discover pour respecter les genres choisis
+        const decouverte   = await tmdb.discoverMovies(1, genres);
+        totalPages.current = decouverte.total_pages;
+        resultats          = decouverte.results;
       } else {
-        // Pas de filtre : mix trending + discover pour la variété
-        const [trending, discover] = await Promise.all([
+        // Pas de filtre : mix tendances + découverte pour plus de variété
+        const [tendances, decouverte] = await Promise.all([
           tmdb.trendingMovies(1),
           tmdb.discoverMovies(1, []),
         ]);
-        totalPagesRef.current = discover.total_pages;
-        rawResults = [...trending.results, ...discover.results];
+        totalPages.current = decouverte.total_pages;
+        resultats          = [...tendances.results, ...decouverte.results];
       }
-      const unique = rawResults.filter(
-        (m, index, self) => m.poster_path && self.findIndex((o) => o.id === m.id) === index
+
+      // Dédoublonner (un film peut apparaître dans tendances ET découverte)
+      const sansDoublons = resultats.filter(
+        (film, index, liste) => film.poster_path && liste.findIndex((f) => f.id === film.id) === index
       );
-      setMovies(filterMovies(unique));
-      pageRef.current = 2;
+      setFilms(filtrerFilms(sansDoublons));
+      pageCourante.current = 2;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur de chargement');
+      setErreur(err instanceof Error ? err.message : 'Erreur de chargement');
     } finally {
-      setLoading(false);
+      setChargement(false);
     }
-  }, [filterMovies, selectedGenres]);
+  }
 
-  const onCardConsumed = useCallback(
-    (remainingCount: number) => {
-      if (remainingCount <= PRELOAD_THRESHOLD && !fetchingRef.current) {
-        const nextPage = pageRef.current;
-        if (nextPage <= totalPagesRef.current) {
-          pageRef.current += 1;
-          loadPage(nextPage);
-        }
+  // Appelé après chaque swipe pour déclencher le preload si besoin
+  function surCarteConsommee(nbRestants: number) {
+    if (nbRestants <= SEUIL_PRELOAD && !enCoursDeChargement.current) {
+      const prochainePage = pageCourante.current;
+      if (prochainePage <= totalPages.current) {
+        pageCourante.current += 1;
+        chargerPage(prochainePage);
       }
-    },
-    [loadPage]
-  );
+    }
+  }
 
-  const removeTopMovie = useCallback(() => {
-    setMovies((prev) => prev.slice(1));
-  }, []);
+  function supprimerPremierFilm() {
+    setFilms((prev) => prev.slice(1));
+  }
 
   return {
-    movies,
-    loading,
-    error,
-    initialize,
-    onCardConsumed,
-    removeTopMovie,
+    films,
+    chargement,
+    erreur,
+    initialiser,
+    surCarteConsommee,
+    supprimerPremierFilm,
   };
 }
