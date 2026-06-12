@@ -37,3 +37,5 @@ Thumbs.db
 
 # ── Config MCP (peut contenir des tokens) ─────────────────────────────────
 .mcp.json
+
+.SIGNING.md

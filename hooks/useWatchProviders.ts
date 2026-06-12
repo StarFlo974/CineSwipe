@@ -1,73 +1,61 @@
 import { useState, useEffect } from 'react';
 import { tmdb } from '../services/tmdb';
-import { WatchProviderResult } from '../types/movie';
+import { WatchProviderResult, MovieDetail } from '../types/movie';
 
-export interface WatchProvidersData {
-  tmdb: WatchProviderResult | null;
-  loading: boolean;
-  error: string | null;
-}
-
-export function useWatchProviders(movieId: number): WatchProvidersData {
-  const [tmdbProviders, setTmdbProviders] = useState<WatchProviderResult | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+// Récupère les plateformes de streaming disponibles pour un film (région FR)
+export function useWatchProviders(idFilm: number) {
+  const [fournisseurs, setFournisseurs] = useState<WatchProviderResult | null>(null);
+  const [chargement, setChargement]    = useState(true);
+  const [erreur, setErreur]            = useState<string | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
+    let annule = false;
 
-    const load = async () => {
-      setLoading(true);
-      setError(null);
-
+    async function charger() {
+      setChargement(true);
+      setErreur(null);
       try {
-        const tmdbResponse = await tmdb.getWatchProviders(movieId);
-
-        if (cancelled) return;
-
-        setTmdbProviders(tmdbResponse.results?.FR ?? null);
+        const reponse = await tmdb.getWatchProviders(idFilm);
+        if (!annule) setFournisseurs(reponse.results?.FR ?? null);
       } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Erreur de chargement');
-        }
+        if (!annule) setErreur(err instanceof Error ? err.message : 'Erreur de chargement');
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!annule) setChargement(false);
       }
-    };
+    }
 
-    load();
-    return () => { cancelled = true; };
-  }, [movieId]);
+    charger();
+    return () => { annule = true; };
+  }, [idFilm]);
 
-  return { tmdb: tmdbProviders, loading, error };
+  return { fournisseurs, chargement, erreur };
 }
 
-export function useMovieDetail(movieId: number) {
-  const [movie, setMovie] = useState<import('../types/movie').MovieDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+// Récupère les détails complets d'un film (casting, vidéos, etc.)
+export function useMovieDetail(idFilm: number) {
+  const [film, setFilm]          = useState<MovieDetail | null>(null);
+  const [chargement, setChargement] = useState(true);
+  const [erreur, setErreur]      = useState<string | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
+    let annule = false;
 
-    const load = async () => {
-      setLoading(true);
-      setError(null);
+    async function charger() {
+      setChargement(true);
+      setErreur(null);
       try {
-        const detail = await tmdb.getMovie(movieId);
-        if (!cancelled) setMovie(detail);
+        const detail = await tmdb.getMovie(idFilm);
+        if (!annule) setFilm(detail);
       } catch (err) {
-        if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Erreur de chargement');
-        }
+        if (!annule) setErreur(err instanceof Error ? err.message : 'Erreur de chargement');
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!annule) setChargement(false);
       }
-    };
+    }
 
-    load();
-    return () => { cancelled = true; };
-  }, [movieId]);
+    charger();
+    return () => { annule = true; };
+  }, [idFilm]);
 
-  return { movie, loading, error };
+  return { film, chargement, erreur };
 }

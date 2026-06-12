@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Available on IzzyOnDroid](https://img.shields.io/badge/IzzyOnDroid-available-green)](https://apt.izzysoft.de/fdroid/index/apk/com.florian.cineswipe)
 
-Application mobile de découverte de films. Swipez pour découvrir, gérez votre liste et trouvez où regarder — sans compte, sans tracking.
+Application mobile de découverte de films. Swipez pour découvrir, gérez votre liste et trouvez où regarder, sans compte, sans tracking.
 
 ## Utilisation
 

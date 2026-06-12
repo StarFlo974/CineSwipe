@@ -1,7 +1,3 @@
-// ─── Tokens extraits pixel-perfect du Figma ───────────────────────────────
-// Figma file : https://www.figma.com/design/Ry9Ab3azPhFExT0yh4d0kb
-// Lecture MCP le 2026-04-28 — valeurs hexadécimales exactes
-
 export const DARK_THEME = {
   // Backgrounds
   bg:      '#12121a',   // canvas principal (frame bg dark)
@@ -46,7 +42,7 @@ export const LIGHT_THEME = {
 export type Theme = typeof DARK_THEME;
 export type ThemeMode = 'dark' | 'light';
 
-// ─── Spacing (base 4px) ───────────────────────────────────────────────────
+// Spacing (base 4px)
 export const SPACING = {
   xs:  4,
   sm:  8,
@@ -57,7 +53,7 @@ export const SPACING = {
   xxxl:48,
 } as const;
 
-// ─── Border radius ────────────────────────────────────────────────────────
+// Border radius
 export const RADIUS = {
   xs:   4,
   sm:   8,   // thumbnail poster (58×68)
@@ -72,7 +68,7 @@ export const RADIUS = {
   full: 999,
 } as const;
 
-// ─── Typographie Inter ────────────────────────────────────────────────────
+// Typographie Inter
 export const FONT_SIZE = {
   xxs: 10,   // cast name, tab labels
   xs:  11,   // meta secondaire, tab bar labels, chip text
@@ -92,7 +88,7 @@ export const FONT_WEIGHT = {
   bold:      '700' as const,
 } as const;
 
-// ─── Layout figma (390×844) ───────────────────────────────────────────────
+// Layout figma (390×844)
 export const LAYOUT = {
   screenW:    390,
   screenH:    844,

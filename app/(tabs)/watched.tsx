@@ -129,7 +129,7 @@ export default function WatchedScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: C.bg }]}>
-      {/* ── Header ── */}
+      {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + SPACING.sm }]}>
         <Text style={[styles.pageTitle, { color: C.text }]}>Vus</Text>
         <Text style={[styles.count, { color: C.textSec }]}>
@@ -137,7 +137,7 @@ export default function WatchedScreen() {
         </Text>
       </View>
 
-      {/* ── Search ── */}
+      {/* Search */}
       <View style={[styles.searchBar, { backgroundColor: C.card }]}>
         <Ionicons name="search-outline" size={16} color={C.textSec} />
         <TextInput
@@ -150,7 +150,7 @@ export default function WatchedScreen() {
         />
       </View>
 
-      {/* ── Stats bar (Figma : 350×64 radius=14) ── */}
+      {/* Stats bar */}
       {watched.length > 0 && (
         <View style={[styles.statsBar, { backgroundColor: C.card }]}>
           <View style={styles.statCell}>
@@ -179,7 +179,7 @@ export default function WatchedScreen() {
         </View>
       )}
 
-      {/* ── Filter chips (Figma: w=82 h=28 radius=14) ── */}
+      {/* Filter chips */}
       <View style={styles.chips}>
         {FILTERS.map((f) => {
           const active = filter === f.key;
@@ -206,7 +206,7 @@ export default function WatchedScreen() {
         })}
       </View>
 
-      {/* ── List ── */}
+      {/* List */}
       {filtered.length === 0 ? (
         <View style={styles.empty}>
           <Ionicons name="checkmark-circle-outline" size={68} color={C.textSec} />
@@ -233,7 +233,7 @@ export default function WatchedScreen() {
         />
       )}
 
-      {/* ── Edit rating modal ── */}
+      {/* Edit rating modal */}
       <Modal
         visible={editItem !== null}
         transparent

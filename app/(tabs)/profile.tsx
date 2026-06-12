@@ -99,14 +99,14 @@ export default function ProfileScreen() {
         contentContainerStyle={{ paddingBottom: insets.bottom + SPACING.xl }}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Header ── */}
+        {/* Header */}
         <View style={[styles.header, { paddingTop: insets.top + SPACING.sm }]}>
           <View style={{ width: 44 }} />
           <Text style={[styles.pageTitle, { color: C.text }]}>Mon Profil</Text>
           <View style={{ width: 44 }} />
         </View>
 
-        {/* ── Avatar ── */}
+        {/* Avatar */}
         <View style={styles.avatarSection}>
           <View style={[styles.avatar, { backgroundColor: C.accent }]}>
             <Text style={styles.avatarLetter}>{username.charAt(0).toUpperCase()}</Text>
@@ -122,7 +122,7 @@ export default function ProfileScreen() {
           </Text>
         </View>
 
-        {/* ── Stat cards ── */}
+        {/* Stat cards */}
         <View style={styles.statsRow}>
           {[
             { value: String(watchlist.length), label: 'À voir' },
@@ -142,7 +142,7 @@ export default function ProfileScreen() {
           ))}
         </View>
 
-        {/* ── Genres préférés ── */}
+        {/* Genres préférés */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: C.text }]}>Genres préférés</Text>
           {topGenres.length === 0 ? (
@@ -170,7 +170,7 @@ export default function ProfileScreen() {
           )}
         </View>
 
-        {/* ── Voir toutes mes listes ── */}
+        {/* Voir toutes mes listes */}
         <TouchableOpacity
           style={styles.listsLink}
           onPress={() => router.push('/(tabs)/watchlist')}
@@ -181,7 +181,7 @@ export default function ProfileScreen() {
           </Text>
         </TouchableOpacity>
 
-        {/* ── Paramètres ── */}
+        {/* Paramètres */}
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: C.text }]}>Paramètres</Text>
           <View style={[styles.settingRow, { backgroundColor: C.card }]}>
@@ -199,7 +199,7 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {/* ── Quick access ── */}
+        {/* Quick access */}
         <View style={styles.section}>
           {[
             { label: 'Films à voir', count: watchlist.length, route: '/(tabs)/watchlist' as const, emoji: '🎞' },
@@ -220,7 +220,7 @@ export default function ProfileScreen() {
         </View>
       </ScrollView>
 
-      {/* ── Modal édition profil ── */}
+      {/* Modal édition profil */}
       <Modal
         visible={editVisible}
         transparent
